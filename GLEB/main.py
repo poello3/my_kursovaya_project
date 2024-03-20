@@ -7,42 +7,40 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 import pandas as pd
 
-
-users_file_path = 'C:/Users/ekart/GLEB/14_Mar_2024_17_03_users_report.xlsx'
+users_file_path = 'C:/Users/Я/Desktop/Курсовая 3/my_kursovaya_project/GLEB/14_Mar_2024_17_03_users_report.xlsx'
 users_df = pd.read_excel(users_file_path)
 
-
-filtered_users_df = users_df.dropna(subset=["Персональные качества и навыки", "Знание специализированных программ"], how='all')
-
+filtered_users_df = users_df.dropna(subset=["Персональные качества и навыки", "Знание специализированных программ"],
+                                    how='all')
 
 original_count = users_df.shape[0]
 filtered_count = filtered_users_df.shape[0]
 
-filtered_users_df['Interests_and_Skills'] = filtered_users_df[['Персональные качества и навыки', 'Знание специализированных программ']].apply(lambda x: ' '.join(x.dropna()), axis=1)
+filtered_users_df['Interests_and_Skills'] = filtered_users_df[
+    ['Персональные качества и навыки', 'Знание специализированных программ']].apply(lambda x: ' '.join(x.dropna()),
+                                                                                    axis=1)
 
-
-projects_file_path = 'C:/Users/ekart/GLEB/14_Mar_2024_20_10_project_report.xlsx'
+projects_file_path = 'C:/Users/Я/Desktop/Курсовая 3/my_kursovaya_project/GLEB/14_Mar_2024_20_10_project_report.xlsx'
 
 all_sheets_df = pd.concat(pd.read_excel(projects_file_path, sheet_name=None), ignore_index=True)
 
+clean_projects_df = all_sheets_df.dropna(how='all')
 
+description_column = clean_projects_df.columns[
+    clean_projects_df.applymap(lambda x: isinstance(x, str) and len(x) > 50).any()]
+
+description_column_name = description_column[0] if len(description_column) > 0 else "Column not found"
+sample_descriptions = clean_projects_df[
+    description_column].head() if description_column_name != "Column not found" else "No descriptions found"
 
 clean_projects_df = all_sheets_df.dropna(how='all')
 
-description_column = clean_projects_df.columns[clean_projects_df.applymap(lambda x: isinstance(x, str) and len(x) > 50).any()]
+description_column = clean_projects_df.columns[
+    clean_projects_df.applymap(lambda x: isinstance(x, str) and len(x) > 50).any()]
 
 description_column_name = description_column[0] if len(description_column) > 0 else "Column not found"
-sample_descriptions = clean_projects_df[description_column].head() if description_column_name != "Column not found" else "No descriptions found"
-
-
-clean_projects_df = all_sheets_df.dropna(how='all')
-
-description_column = clean_projects_df.columns[clean_projects_df.applymap(lambda x: isinstance(x, str) and len(x) > 50).any()]
-
-description_column_name = description_column[0] if len(description_column) > 0 else "Column not found"
-sample_descriptions = clean_projects_df[description_column].head() if description_column_name != "Column not found" else "No descriptions found"
-
-
+sample_descriptions = clean_projects_df[
+    description_column].head() if description_column_name != "Column not found" else "No descriptions found"
 
 user_interests_skills = filtered_users_df['Interests_and_Skills'].tolist()
 project_descriptions = clean_projects_df['Краткое описание проекта'].dropna().tolist()
@@ -80,14 +78,14 @@ def find_top_experts_for_project(project_name):
     """
     if project_name not in top_matches:
         return "Проект с таким названием не найден. Пожалуйста, проверьте название и попробуйте снова."
-    
+
     top_users_for_project = top_matches[project_name]
-    
+
     top_users_info = []
     for user in top_users_for_project:
         user_info = f"ID: {user['id']}, Имя: {user['Имя']}"
         top_users_info.append(user_info)
-    
+
     return top_users_info
 
 
@@ -102,18 +100,22 @@ class User(BaseModel):
     id: int
     Имя: str
 
+
 @app.get("/top-experts/{project_name}", response_model=List[User])
 async def get_top_experts_for_project(project_name: str) -> Union[List[User], str]:
     # Проверяем, есть ли проект с таким названием
     if project_name not in top_matches:
-        raise HTTPException(status_code=404, detail="Проект с таким названием не найден. Пожалуйста, проверьте название и попробуйте снова.")
-    
+        raise HTTPException(status_code=404,
+                            detail="Проект с таким названием не найден. Пожалуйста, проверьте название и попробуйте снова.")
+
     # Получаем топ-5 пользователей для проекта
     top_users_for_project = top_matches[project_name]
-    
+
     # Возвращаем информацию о пользователях
     return top_users_for_project
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")

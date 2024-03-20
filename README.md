@@ -31,3 +31,6 @@ pip install fastapi uvicorn pydantic pandas scikit-learn
 2. Обновите пути к файлам в скрипте, чтобы они указывали на ваши файлы Excel.
 3. Запустите сервер FastAPI, выполнив файл main.py
 
+-- [Ссылка на файл main.py](https://github.com/poello3/my_kursovaya_project/blob/main/GLEB/main.py)
+
+-- [Ссылка на jupyter notebook](https://github.com/poello3/my_kursovaya_project/blob/main/GLEB/project.ipynb)
